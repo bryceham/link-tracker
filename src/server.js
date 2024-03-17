@@ -31,8 +31,8 @@ app.post("/create", async (req, res) => {
   try {
     // Insert new link into the database
     const result = await pool.query(
-      "INSERT INTO links (link, destination, clicks) VALUES ($1, $2, $3)",
-      [link, destination, 0]
+      "INSERT INTO links (link, destination) VALUES ($1, $2) RETURNING id",
+      [link, destination]
     );
     res.send(`Tracking link created: ${link}`);
   } catch (err) {
@@ -41,7 +41,7 @@ app.post("/create", async (req, res) => {
   }
 });
 
-// Route to track and redirect
+// Route to track, increment click count, and redirect
 app.get("/:link", async (req, res) => {
   const { link } = req.params;
   try {
@@ -55,12 +55,10 @@ app.get("/:link", async (req, res) => {
     }
 
     // Record click event
-    await pool.query("INSERT INTO click_events (link) VALUES ($1)", [link]);
-
-    // Increment click count
-    await pool.query("UPDATE links SET clicks = clicks + 1 WHERE link = $1", [
-      link,
-    ]);
+    await pool.query(
+      "INSERT INTO click_events (link_id) VALUES ((SELECT id FROM links WHERE link = $1))",
+      [link]
+    );
 
     // Redirect to destination
     res.redirect(result.rows[0].destination);
@@ -76,7 +74,7 @@ app.get("/:link/stats", async (req, res) => {
   try {
     // Retrieve link info from the database
     const result = await pool.query(
-      "SELECT destination, clicks FROM links WHERE link = $1",
+      "SELECT l.destination, COUNT(ce.id) AS clicks FROM links l LEFT JOIN click_events ce ON l.id = ce.link_id WHERE l.link = $1 GROUP BY l.destination",
       [link]
     );
     if (result.rows.length === 0) {
