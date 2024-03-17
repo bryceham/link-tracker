@@ -5,7 +5,13 @@ const app = express();
 app.use(express.json());
 
 // PostgreSQL connection configuration
-const pool = new Pool();
+const pool = new Pool({
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
+});
 
 // Middleware to log requests
 app.use((req, res, next) => {
