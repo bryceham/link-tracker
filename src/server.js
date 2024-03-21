@@ -1,5 +1,6 @@
 const express = require("express");
 const { Pool } = require("pg");
+const path = require("path");
 
 const app = express();
 app.use(express.json());
@@ -19,7 +20,16 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static('public'));
+// Route to serve the HTML page
+app.get("/stats", async (req, res) => {
+  try {
+    const htmlPath = path.join(__dirname, "public", "link-statistics.html");
+    res.sendFile(htmlPath);
+  } catch (err) {
+    console.error("Error serving HTML file:", err);
+    res.status(500).send("Error serving HTML file");
+  }
+});
 
 // Route to create a new tracking link
 app.post("/create", async (req, res) => {
@@ -44,7 +54,7 @@ app.post("/create", async (req, res) => {
 });
 
 // Route to list all links and their clicks
-app.get("/stats", async (req, res) => {
+app.get("/api/all", async (req, res) => {
   try {
     // Retrieve all links and their click counts from the database
     const result = await pool.query(

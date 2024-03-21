@@ -34,7 +34,7 @@
         </tbody>
     </table>
     <script>
-        fetch('/stats')
+        fetch('/api/all')
             .then(response => response.json())
             .then(data => {
                 const linkData = document.getElementById('linkData');
