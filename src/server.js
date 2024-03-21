@@ -91,11 +91,13 @@ app.get("/:link", async (req, res) => {
       return res.status(404).send("Link not found");
     }
 
-    // Record click event
-    await pool.query(
+    // Record click event (non-blocking)
+    pool.query(
       "INSERT INTO click_events (link_id) VALUES ((SELECT id FROM links WHERE link = $1))",
       [link]
-    );
+    ).catch(err => {
+      console.error("Error recording click event:", err);
+    });
 
     // Redirect to destination
     res.redirect(result.rows[0].destination);
