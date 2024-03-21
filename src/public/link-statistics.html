@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Statistics</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Link Statistics</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Link</th>
+                <th>Destination</th>
+                <th>Clicks</th>
+            </tr>
+        </thead>
+        <tbody id="linkData">
+            <!-- Data will be dynamically added here -->
+        </tbody>
+    </table>
+    <script>
+        fetch('/stats')
+            .then(response => response.json())
+            .then(data => {
+                const linkData = document.getElementById('linkData');
+                data.forEach(link => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${link.link}</td>
+                        <td>${link.destination}</td>
+                        <td>${link.clicks}</td>
+                    `;
+                    linkData.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching link data:', error));
+    </script>
+</body>
+</html>

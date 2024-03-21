@@ -19,6 +19,8 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(express.static('public'));
+
 // Route to create a new tracking link
 app.post("/create", async (req, res) => {
   const { link, destination } = req.body;
