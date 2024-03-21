@@ -53,22 +53,30 @@ app.post("/create", async (req, res) => {
   }
 });
 
-// Route to list all links and their clicks
+// Route to list all links and their clicks including statistics for all time, last 24 hours, and last 7 days
 app.get("/api/all", async (req, res) => {
   try {
-    // Retrieve all links and their click counts from the database
-    const result = await pool.query(
-      "SELECT l.link, l.destination, COUNT(ce.id) AS clicks FROM links l LEFT JOIN click_events ce ON l.id = ce.link_id GROUP BY l.link, l.destination"
-    );
+    const query = `
+      SELECT 
+        l.link, 
+        l.destination, 
+        SUM(CASE WHEN ce.clicked_at >= NOW() - INTERVAL '7 days' THEN 1 ELSE 0 END) AS "7d",
+        SUM(CASE WHEN ce.clicked_at >= NOW() - INTERVAL '1 day' THEN 1 ELSE 0 END) AS "24h",
+        COUNT(ce.id) AS allTime
+      FROM 
+        links l 
+        LEFT JOIN click_events ce ON l.id = ce.link_id 
+      GROUP BY 
+        l.link, l.destination;
+    `;
 
-    // Send response with the list of links and clicks
+    const result = await pool.query(query);
     res.json(result.rows);
   } catch (err) {
     console.error("Error retrieving links:", err);
     res.status(500).send("Error retrieving links");
   }
 });
-
 
 // Route to track, increment click count, and redirect
 app.get("/:link", async (req, res) => {

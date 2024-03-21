@@ -17,16 +17,25 @@
         th {
             background-color: #f2f2f2;
         }
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
     <h1>Link Statistics</h1>
+    <div id="loading">Loading...</div>
     <table>
         <thead>
             <tr>
                 <th>Link</th>
                 <th>Destination</th>
-                <th>Clicks</th>
+                <th>Last 24 Hours</th>
+                <th>Last 7 Days</th>
+                <th>All Time</th>
             </tr>
         </thead>
         <tbody id="linkData">
@@ -34,21 +43,35 @@
         </tbody>
     </table>
     <script>
+        const loadingDiv = document.getElementById('loading');
+        const linkData = document.getElementById('linkData');
+
+        // Show loading indicator
+        loadingDiv.style.display = 'block';
+
         fetch('/api/all')
             .then(response => response.json())
             .then(data => {
-                const linkData = document.getElementById('linkData');
+                // Hide loading indicator
+                loadingDiv.style.display = 'none';
+
                 data.forEach(link => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${link.link}</td>
-                        <td>${link.destination}</td>
-                        <td>${link.clicks}</td>
+                        <td><a href="/${link.link}" target="_blank">${link.link}</a></td>
+                        <td><a href="${link.destination}" target="_blank">${link.destination}</a></td>
+                        <td>${link["24h"]}</td>
+                        <td>${link["7d"]}</td>
+                        <td>${link.alltime}</td>
                     `;
                     linkData.appendChild(row);
                 });
             })
-            .catch(error => console.error('Error fetching link data:', error));
+            .catch(error => {
+                console.error('Error fetching link data:', error);
+                // Hide loading indicator
+                loadingDiv.style.display = 'none';
+            });
     </script>
 </body>
 </html>
