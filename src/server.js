@@ -41,6 +41,23 @@ app.post("/create", async (req, res) => {
   }
 });
 
+// Route to list all links and their clicks
+app.get("/stats", async (req, res) => {
+  try {
+    // Retrieve all links and their click counts from the database
+    const result = await pool.query(
+      "SELECT l.link, l.destination, COUNT(ce.id) AS clicks FROM links l LEFT JOIN click_events ce ON l.id = ce.link_id GROUP BY l.link, l.destination"
+    );
+
+    // Send response with the list of links and clicks
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error retrieving links:", err);
+    res.status(500).send("Error retrieving links");
+  }
+});
+
+
 // Route to track, increment click count, and redirect
 app.get("/:link", async (req, res) => {
   const { link } = req.params;
