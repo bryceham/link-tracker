@@ -131,6 +131,32 @@ app.get("/:link/stats", async (req, res) => {
   }
 });
 
+// Route to get daily click statistics
+app.get("/api/daily/:link", async (req, res) => {
+  const { link } = req.params;
+  try {
+    const query = `
+      SELECT 
+        TO_CHAR(DATE_TRUNC('day', ce.clicked_at AT TIME ZONE 'Australia/Sydney'), 'YYYY-MM-DD') AS date,
+        COUNT(ce.id) AS clicks
+      FROM 
+        links l
+        LEFT JOIN click_events ce ON l.id = ce.link_id
+      WHERE 
+        l.link = $1
+      GROUP BY 
+        date
+      ORDER BY 
+        date;
+    `;
+    const result = await pool.query(query, [link]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error getting daily statistics:", err);
+    res.status(500).send("Error getting daily statistics");
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
