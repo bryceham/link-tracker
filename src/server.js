@@ -18,6 +18,11 @@ const pool = new Pool({
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
+});'
+
+app.get("/robots.txt", (req, res) => {
+    const filePath = path.join(__dirname, "public", "robots.txt");
+    res.sendFile(filePath);
 });
 
 // Route to serve the HTML page
