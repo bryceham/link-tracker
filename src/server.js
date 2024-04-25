@@ -18,11 +18,16 @@ const pool = new Pool({
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
-});'
+});
 
 app.get("/robots.txt", (req, res) => {
-    const filePath = path.join(__dirname, "public", "robots.txt");
-    res.sendFile(filePath);
+    try {
+        const filePath = path.join(__dirname, "public", "robots.txt");
+        res.sendFile(filePath);
+    } catch (err) {
+        console.error("Error serving file:", err);
+        res.status(500).send("Error serving file");
+  }
 });
 
 // Route to serve the HTML page
